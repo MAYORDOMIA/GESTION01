@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { LayoutDashboard, Users, Bot, Menu, X, ClipboardList, Factory, Truck, Archive, Wallet, HandCoins, TruckIcon, Clock } from 'lucide-react';
+import { LayoutDashboard, Users, Bot, Menu, X, ClipboardList, Factory, Truck, Archive, Wallet, HandCoins, Clock } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -18,7 +18,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
     { id: 'installation', label: 'Instalaciones', icon: Truck },
     { id: 'archive', label: 'Archivo Histórico', icon: Archive },
     { id: 'payments', label: 'Cobranzas', icon: HandCoins },
-    { id: 'suppliers', label: 'Proveedores', icon: TruckIcon },
+    { id: 'suppliers', label: 'Proveedores', icon: Truck },
     { id: 'accounting', label: 'Contabilidad', icon: Wallet },
     { id: 'ai', label: 'Asistente IA', icon: Bot },
     { id: 'attendance', label: 'Personal', icon: Clock },
