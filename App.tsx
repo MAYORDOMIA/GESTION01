@@ -12,17 +12,17 @@ import AccountingManager from './components/AccountingManager';
 import PaymentsManager from './components/PaymentsManager';
 import SuppliersManager from './components/SuppliersManager';
 import EmployeeAttendanceManager from './components/EmployeeAttendanceManager';
-import { Bell, Search, Trash2, LayoutGrid, FileText, Settings, Hammer, Monitor } from 'lucide-react';
+import { Hammer, LayoutGrid } from 'lucide-react';
 import { BudgetRequest, Project, ProjectStatus, RequestStatus, SupplierDebt } from './types';
 
 const INITIAL_REQUESTS: BudgetRequest[] = [
   {
     id: 'req_1',
-    clientName: 'Estudio de Arquitectura Delta',
+    clientName: 'Estudio Delta - Obra Palermo',
     phone: '11-5555-4444',
     email: 'obras@estudiodelta.com',
     address: 'Calle Falsa 123, CABA',
-    description: 'Necesitamos presupuesto para 15 aberturas línea A30 con DVH para edificio residencial. Adjunto planos de carpintería.',
+    description: '15 aberturas línea A30 con DVH para edificio residencial.',
     status: RequestStatus.PENDIENTE,
     createdAt: '2024-05-20',
     files: []
@@ -36,21 +36,17 @@ const App: React.FC = () => {
   const [supplierDebts, setSupplierDebts] = useState<SupplierDebt[]>([]);
   const [initialEmpId, setInitialEmpId] = useState<string | null>(null);
 
-  // Lógica para detectar escaneo de QR desde el celular
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const empId = params.get('empId');
     if (empId) {
       setInitialEmpId(empId);
       setActiveTab('attendance');
-      // Limpiamos la URL para que no quede el ID ahí siempre
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
 
-  const handleAddRequest = (req: BudgetRequest) => {
-    setRequests([req, ...requests]);
-  };
+  const handleAddRequest = (req: BudgetRequest) => setRequests([req, ...requests]);
 
   const handleSendBudget = (request: BudgetRequest, pdf: File, clientCode: string, total: number) => {
     const newProject: Project = {
@@ -64,7 +60,19 @@ const App: React.FC = () => {
       finalBudgetUrl: URL.createObjectURL(pdf),
       requestData: request,
       clientCode: clientCode || '',
-      manufacturingData: { color: '', line: '', details: '', deliveryDate: '' },
+      manufacturingData: { 
+        color: '', 
+        line: '', 
+        details: '', 
+        deliveryDate: '',
+        tasks: [
+          { id: 'task_materials', label: 'Compra de materiales', isCompleted: false, notes: '' },
+          { id: 'task_glass', label: 'Vidrios', isCompleted: false, notes: '' },
+          { id: 'task_aluminum', label: 'Aluminio', isCompleted: false, notes: '' },
+          { id: 'task_installation', label: 'Colocación', isCompleted: false, notes: '' },
+        ],
+        workshopLogs: []
+      },
       paymentData: { downPayment: 0, isFinalPaid: false }
     };
     setSentProjects([newProject, ...sentProjects]);
@@ -101,63 +109,49 @@ const App: React.FC = () => {
 
   const getTitle = () => {
     switch (activeTab) {
-      case 'dashboard': return 'Resumen de Actividad';
-      case 'requests': return 'Nuevo Presupuesto';
-      case 'ai': return 'Asistente Arista IA';
-      case 'clients': return 'Carpeta de Clientes';
-      case 'production': return 'Taller y Fabricación';
-      case 'installation': return 'Instalación en Obra';
-      case 'attendance': return 'Control de Asistencia';
+      case 'dashboard': return 'Panel de Control';
+      case 'requests': return 'Pedidos y CRM';
+      case 'ai': return 'Asistente IA Arista';
+      case 'clients': return 'Obras Vigentes';
+      case 'production': return 'Fábrica / Taller';
+      case 'installation': return 'Montaje e Instalación';
+      case 'attendance': return 'Personal y Asistencia';
       case 'archive': return 'Archivo Histórico';
-      case 'payments': return 'Control de Cobros';
-      case 'suppliers': return 'Deudas Proveedores';
-      case 'accounting': return 'Contabilidad';
+      case 'payments': return 'Gestión de Cobros';
+      case 'suppliers': return 'Proveedores e Insumos';
+      case 'accounting': return 'Estado Contable';
       default: return 'Panel de Control';
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900">
+    <div className="flex min-h-screen bg-[#F8FAFC]">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       
-      <main className="flex-1 lg:ml-64 p-6 lg:p-12 transition-all duration-300">
-        <header className="mb-12">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-            <div>
-              <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-2">{getTitle()}</h1>
-              <p className="text-slate-400 font-medium">Gestión de documentación técnica y comercial</p>
-            </div>
+      <main className="flex-1 lg:ml-64 p-6 lg:p-10 transition-all duration-300">
+        <header className="mb-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-none">{getTitle()}</h1>
+            <p className="text-slate-400 font-medium mt-1">Gestión técnica de aberturas de aluminio</p>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-2 bg-white p-1.5 rounded-[1.5rem] shadow-sm border border-slate-100">
+          <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-100">
+            {[
+              { id: 'production', icon: Hammer, label: 'Taller' },
+              { id: 'dashboard', icon: LayoutGrid, label: 'Resumen' }
+            ].map(btn => (
               <button 
-                onClick={() => setActiveTab('requests')}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'requests' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50'}`}
+                key={btn.id}
+                onClick={() => setActiveTab(btn.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${activeTab === btn.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50'}`}
               >
-                <Monitor size={14} /> Presupuesto
+                <btn.icon size={14} /> {btn.label}
               </button>
-              <button 
-                onClick={() => setActiveTab('clients')}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'clients' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50'}`}
-              >
-                <FileText size={14} /> Carpeta
-              </button>
-              <button 
-                onClick={() => setActiveTab('production')}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'production' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50'}`}
-              >
-                <Hammer size={14} /> Taller
-              </button>
-              <button 
-                onClick={() => setActiveTab('dashboard')}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'dashboard' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50'}`}
-              >
-                <LayoutGrid size={14} /> Resumen
-              </button>
-            </div>
+            ))}
           </div>
         </header>
 
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           {renderContent()}
         </div>
       </main>
